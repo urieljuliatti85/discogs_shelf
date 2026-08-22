@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+  <head>
+    <title><%= content_for(:title) || "Discogs Shelf" %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="application-name" content="Discogs Shelf">
+    <meta name="theme-color" content="#0b0b0f">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png">
+    <link rel="preconnect" href="https://i.discogs.com">
+
+    <%= stylesheet_link_tag "application" %>
+    <%= javascript_include_tag "application", type: "module", defer: true %>
+  </head>
+
+  <body class="h-full bg-ink-950 text-ink-100 antialiased">
+    <%= yield %>
+  </body>
+</html>

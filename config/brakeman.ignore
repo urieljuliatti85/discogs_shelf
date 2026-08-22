@@ -1,0 +1,12 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "c9b49ea22b83664f3facf5cde6410524229a4c71af4e97cf033a9c34a79cc2ba",
+      "check_name": "SQL",
+      "warning_type": "SQL Injection",
+      "file": "app/models/release.rb",
+      "note": "Release.facet interpolates a column name so it can call SQLite's json_each on a JSON array column. The name comes from Release::FACETS.fetch, a frozen allowlist that raises KeyError on anything else, so no request parameter can reach the query. Brakeman cannot follow the nested hash lookup."
+    }
+  ],
+  "brakeman_version": "7.1.1"
+}

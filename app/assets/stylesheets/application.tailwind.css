@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@source "../../../app/javascript";
+@source "../../../app/views";
+
+@theme {
+  --color-ink-50:  #f6f6f8;
+  --color-ink-100: #e7e7ec;
+  --color-ink-200: #c6c6d1;
+  --color-ink-300: #9b9baa;
+  --color-ink-400: #6f6f82;
+  --color-ink-500: #4f4f60;
+  --color-ink-600: #3a3a48;
+  --color-ink-700: #2a2a35;
+  --color-ink-800: #1c1c25;
+  --color-ink-900: #131319;
+  --color-ink-950: #0b0b0f;
+
+  --color-wax-300: #ffd7a8;
+  --color-wax-400: #ffb865;
+  --color-wax-500: #f59331;
+  --color-wax-600: #d9741a;
+
+  --font-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    background-image:
+      radial-gradient(60rem 40rem at 15% -10%, rgba(245, 147, 49, 0.10), transparent 60%),
+      radial-gradient(50rem 35rem at 100% 0%, rgba(96, 120, 255, 0.08), transparent 55%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    background-color: var(--color-wax-500);
+    color: #14140f;
+  }
+}
+
+@layer components {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-ink-600) transparent;
+  }
+}
+
+@utility animate-in {
+  animation: fade-rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fade-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
