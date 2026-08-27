@@ -36,7 +36,7 @@ bin/setup     # instala gems, npm e prepara o banco
 bin/dev       # sobe Rails + esbuild + tailwind em watch
 ```
 
-Abra <http://localhost:3000> e clique em **Sincronizar** — ou rode pelo terminal:
+Abra <http://localhost:3001> e clique em **Sincronizar** — ou rode pelo terminal:
 
 ```bash
 bin/rails discogs:sync
