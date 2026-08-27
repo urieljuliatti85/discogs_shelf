@@ -17,10 +17,15 @@ npm run build          # esbuild once (bundles app/javascript/application.jsx)
 npm run build:css      # tailwind once
 ```
 
+`.githooks/pre-commit` runs `bin/rubocop` over the staged Ruby files and blocks the
+commit on any offense; `bin/setup` activates it with `git config core.hooksPath .githooks`.
+Bypass a single commit with `git commit --no-verify`. The hook also has a test step, but
+it is guarded on a `test/` directory existing and therefore never runs today (see below).
+
 `bin/dev` exports `PORT=3001`, so the app is at <http://localhost:3001>. Plain
 `bin/rails server` falls back to Puma's 3000 — use `bin/dev` unless you mean 3000.
 
-There is no test suite: `rails/test_unit/railtie` is commented out in `config/application.rb`, there is no `test/` directory, and `bin/ci` runs no test step. Don't claim a change is "tested" from a green `bin/ci`. Note also that `bin/ci` shells out to `yarn audit` even though dependencies are managed with npm.
+There is no test suite: `rails/test_unit/railtie` is commented out in `config/application.rb`, there is no `test/` directory, and neither `bin/ci` nor the pre-commit hook runs a test step. Don't claim a change is "tested" from a green `bin/ci`. Note also that `bin/ci` shells out to `yarn audit` even though dependencies are managed with npm.
 
 Config lives in `.env` (loaded by dotenv in dev/test): `DISCOGS_USERNAME` required, `DISCOGS_TOKEN` optional.
 

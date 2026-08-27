@@ -1,0 +1,29 @@
+#!/usr/bin/env sh
+# Ativado por `git config core.hooksPath .githooks` (bin/setup faz isso).
+# Para pular em um commit específico: git commit --no-verify
+set -e
+
+cd "$(git rev-parse --show-toplevel)"
+
+# RuboCop roda só nos arquivos Ruby em stage, e sempre na versão que está no
+# disco — um arquivo parcialmente adicionado é analisado inteiro.
+staged_ruby=$(git diff --cached --name-only --diff-filter=ACMR -z |
+  tr '\0' '\n' |
+  grep -E '(\.rb|\.rake)$|^Rakefile$|^Gemfile$|^config\.ru$' || true)
+
+if [ -n "$staged_ruby" ]; then
+  echo "== RuboCop =="
+  printf '%s\n' "$staged_ruby" | tr '\n' '\0' | xargs -0 bin/rubocop --force-exclusion --
+else
+  echo "== RuboCop: nenhum arquivo Ruby em stage — pulando =="
+fi
+
+# Ainda não há suíte de testes neste projeto (veja CLAUDE.md). Quando existir um
+# test/, este passo passa a rodar sozinho — lembre de reativar o
+# rails/test_unit/railtie em config/application.rb.
+if [ -d test ]; then
+  echo "== Testes =="
+  bin/rails test
+else
+  echo "== Testes: o projeto não tem suíte — pulando =="
+fi
