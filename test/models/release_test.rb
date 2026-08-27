@@ -137,6 +137,10 @@ class ReleaseTest < ActiveSupport::TestCase
     assert_equal "https://www.discogs.com/release/1001", releases(:unknown_pleasures).discogs_url
   end
 
+  test "marketplace_url points at the release listings" do
+    assert_equal "https://www.discogs.com/sell/release/1001", releases(:unknown_pleasures).marketplace_url
+  end
+
   test "destroying a release takes its list rows with it" do
     release = releases(:kind_of_blue)
 

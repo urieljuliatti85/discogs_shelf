@@ -66,6 +66,10 @@ class Release < ApplicationRecord
     "https://www.discogs.com/release/#{discogs_id}"
   end
 
+  def marketplace_url
+    "https://www.discogs.com/sell/release/#{discogs_id}"
+  end
+
   def details_stale?
     details.blank? || details_fetched_at.nil? || details_fetched_at < 30.days.ago
   end

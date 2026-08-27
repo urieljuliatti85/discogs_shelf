@@ -3,7 +3,9 @@ Rails.application.routes.draw do
     get "collection", to: "items#index", defaults: { list: "collection" }
     get "wantlist",   to: "items#index", defaults: { list: "wantlist" }
 
-    resources :releases, only: :show
+    resources :releases, only: :show do
+      get :marketplace, on: :member
+    end
     resource  :sync,    only: [ :show, :create ], controller: "sync"
     resource  :profile, only: :show, controller: "profile"
   end

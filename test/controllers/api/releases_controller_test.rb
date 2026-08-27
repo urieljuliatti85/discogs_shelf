@@ -108,4 +108,36 @@ class Api::ReleasesControllerTest < ActionDispatch::IntegrationTest
     assert json["in_wantlist"]
     assert_equal 4, json["collection"]["rating"]
   end
+
+  test "returns marketplace links for the release and its tracks" do
+    release = releases(:unknown_pleasures)
+    release.update!(
+      details: {
+        "tracklist" => [
+          { "position" => "A1", "title" => "Disorder", "duration" => "3:29", "type_" => "track",
+            "artists" => [ { "name" => "Joy Division" } ] },
+          { "position" => "", "title" => "Side A", "type_" => "heading" }
+        ]
+      },
+      details_fetched_at: 1.hour.ago
+    )
+
+    get marketplace_api_release_url(release.discogs_id)
+
+    assert_response :success
+    assert_equal "https://www.discogs.com/sell/release/1001", json["album"]["url"]
+    assert_equal 1, json["tracks"].size
+    assert_equal "Disorder", json["tracks"].sole["title"]
+    assert_equal(
+      "https://www.discogs.com/sell/list?q=Joy+Division+Disorder&type=release",
+      json["tracks"].sole["marketplace_url"]
+    )
+  end
+
+  test "marketplace endpoint uses the Discogs id and returns not found for unknown releases" do
+    get marketplace_api_release_url(999_999)
+
+    assert_response :not_found
+    assert_equal "not_found", json["error"]
+  end
 end

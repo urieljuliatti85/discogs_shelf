@@ -10,6 +10,7 @@ class ReleaseSerializerTest < ActiveSupport::TestCase
     assert_equal "FACT 10", payload[:catno]
     assert_equal [ "Rock", "Electronic" ], payload[:genres]
     assert_equal "https://www.discogs.com/release/1001", payload[:discogs_url]
+    assert_equal "https://www.discogs.com/sell/release/1001", payload[:marketplace_url]
   end
 
   test "summary leaves the lazily fetched detail fields out" do
@@ -97,6 +98,22 @@ class ReleaseSerializerTest < ActiveSupport::TestCase
     only_wanted = ReleaseSerializer.detail(releases(:selected_ambient))
     assert_not only_wanted[:in_collection]
     assert_nil only_wanted[:collection]
+  end
+
+  test "marketplace returns album and track purchase links" do
+    release = releases(:unknown_pleasures)
+    release.update!(details: {
+      "tracklist" => [
+        { "position" => "A1", "title" => "Disorder", "type_" => "track",
+          "artists" => [ { "name" => "Joy Division" } ] }
+      ]
+    })
+
+    payload = ReleaseSerializer.marketplace(release)
+
+    assert_equal "https://www.discogs.com/sell/release/1001", payload[:album][:url]
+    assert_equal "https://www.discogs.com/sell/list?q=Joy+Division+Disorder&type=release",
+                 payload[:tracks].sole[:marketplace_url]
   end
 
   test "detail caps videos and images" do

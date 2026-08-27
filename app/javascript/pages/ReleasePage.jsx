@@ -129,6 +129,14 @@ export default function ReleasePage() {
           >
             Ver no Discogs <ExternalIcon size={14} />
           </a>
+          <a
+            href={release.marketplace_url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-wax-500 py-2 text-sm font-semibold text-ink-950 transition hover:bg-wax-400"
+          >
+            Comprar este álbum <ExternalIcon size={14} />
+          </a>
         </div>
 
         <div className="min-w-0 space-y-5">
@@ -194,7 +202,10 @@ export default function ReleasePage() {
 
       {release.tracklist?.length > 0 && (
         <section>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-ink-400">Faixas</h2>
+          <div className="mb-3 flex items-baseline justify-between gap-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-ink-400">Faixas</h2>
+            <span className="text-xs text-ink-600">O Discogs vende o álbum completo</span>
+          </div>
           <ol className="divide-y divide-ink-800/70 overflow-hidden rounded-xl border border-ink-800">
             {release.tracklist.map((track, index) => (
               <li
@@ -211,6 +222,18 @@ export default function ReleasePage() {
                   )}
                 </span>
                 <span className="shrink-0 text-xs tabular-nums text-ink-500">{track.duration}</span>
+                {track.type !== "heading" && (
+                  <a
+                    href={`https://www.discogs.com/sell/list?q=${encodeURIComponent(
+                      `${track.artists?.join(", ") || release.artist} ${track.title}`
+                    )}&type=release`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="shrink-0 text-xs text-wax-400 transition hover:text-wax-300"
+                  >
+                    Buscar
+                  </a>
+                )}
               </li>
             ))}
           </ol>

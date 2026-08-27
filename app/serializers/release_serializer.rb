@@ -15,7 +15,8 @@ class ReleaseSerializer
       styles: release.styles,
       formats: release.formats,
       format_summary: format_summary(release),
-      discogs_url: release.discogs_url
+      discogs_url: release.discogs_url,
+      marketplace_url: release.marketplace_url
     }
   end
 
@@ -47,6 +48,27 @@ class ReleaseSerializer
       },
       details_available: release.details.present?
     )
+  end
+
+  def self.marketplace(release)
+    details = release.details || {}
+    tracks = tracklist(details).reject { |track| track[:type] == "heading" }
+
+    {
+      discogs_id: release.discogs_id,
+      title: release.title,
+      artist: release.artist,
+      album: {
+        title: release.title,
+        artist: release.artist,
+        url: release.marketplace_url
+      },
+      tracks: tracks.map do |track|
+        track.merge(
+          marketplace_url: marketplace_search_url("#{track[:artists].presence&.join(', ') || release.artist} #{track[:title]}")
+        )
+      end
+    }
   end
 
   # "2×Vinyl, LP, Album, 180g" — the line Discogs shows under a release title.
@@ -102,5 +124,9 @@ class ReleaseSerializer
   def self.youtube_id(uri)
     return nil if uri.blank?
     uri[%r{(?:v=|youtu\.be/|embed/)([A-Za-z0-9_-]{11})}, 1]
+  end
+
+  def self.marketplace_search_url(query)
+    "https://www.discogs.com/sell/list?q=#{CGI.escape(query)}&type=release"
   end
 end
