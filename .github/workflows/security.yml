@@ -1,0 +1,64 @@
+name: Security
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  # Advisory databases change without the code changing, so re-scan on a
+  # schedule instead of only on commits (Mondays, 09:00 BRT).
+  schedule:
+    - cron: "0 12 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gem-advisories:
+    name: Gem advisories (bundler-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      # --update pulls a fresh ruby-advisory-db. Without it the check runs
+      # against the copy vendored in the gem, which is only as new as the
+      # bundler-audit release and would make the weekly run pointless.
+      # CVEs that don't apply go in config/bundler-audit.yml.
+      - name: Audit gems for known CVEs
+        run: bin/bundler-audit check --update
+
+  rails-static-analysis:
+    name: Static analysis (brakeman)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      # Reviewed warnings are recorded in config/brakeman.ignore.
+      - name: Scan for Rails security vulnerabilities
+        run: bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error
+
+  npm-advisories:
+    name: npm advisories
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      # npm audit resolves the tree straight from package-lock.json, so there
+      # is no install step. Note bin/ci runs `yarn audit` for this instead,
+      # even though dependencies are npm-managed.
+      - name: Audit npm dependencies
+        run: npm audit --audit-level=high

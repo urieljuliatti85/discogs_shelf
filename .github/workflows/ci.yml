@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+# Vulnerability scanning lives in security.yml, on its own schedule.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: RuboCop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      # -f github turns offenses into inline annotations on the PR diff.
+      - name: Lint Ruby
+        run: bin/rubocop -f github
+
+  build:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - run: npm ci
+
+      # app/assets/builds is gitignored, so a broken esbuild or Tailwind build
+      # only shows up when something actually compiles it.
+      - name: Bundle JavaScript
+        run: npm run build
+
+      - name: Compile CSS
+        run: npm run build:css
+
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    env:
+      RAILS_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      # Node is not optional here: with no `test:prepare` task defined (the
+      # test_unit railtie is commented out in config/application.rb),
+      # jsbundling-rails and cssbundling-rails enhance `db:test:prepare` with
+      # javascript:build and css:build instead, so preparing the test DB shells
+      # out to esbuild and tailwindcss.
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - run: npm ci
+
+      - name: Prepare test database
+        run: bin/rails db:test:prepare
+
+      # Green today without asserting anything: the suite is still empty.
+      - name: Run tests
+        run: bin/rails test

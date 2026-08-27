@@ -17,15 +17,32 @@ npm run build          # esbuild once (bundles app/javascript/application.jsx)
 npm run build:css      # tailwind once
 ```
 
-`.githooks/pre-commit` runs `bin/rubocop` over the staged Ruby files and blocks the
-commit on any offense; `bin/setup` activates it with `git config core.hooksPath .githooks`.
-Bypass a single commit with `git commit --no-verify`. The hook also has a test step, but
-it is guarded on a `test/` directory existing and therefore never runs today (see below).
+`.github/workflows/ci.yml` runs on push to `main` and on every PR: `bin/rubocop -f github`,
+the frontend build (`npm run build` + `build:css`, which nothing else verifies since
+`app/assets/builds` is gitignored), and `bin/rails db:test:prepare` + `bin/rails test`.
+The test job installs Node as well as Ruby on purpose — see the note on `db:test:prepare`
+below. It deliberately does not repeat the scans in `security.yml`.
+
+`.github/workflows/security.yml` runs the three vulnerability scans on push to `main`,
+on every PR, and weekly (advisory databases move without the code moving): bundler-audit
+against a freshly pulled ruby-advisory-db, brakeman, and `npm audit --audit-level=high`.
+Suppressions live in `config/bundler-audit.yml` and `config/brakeman.ignore`.
+
+`.githooks/pre-commit` runs `bin/rubocop -f github` over the whole project and then
+`bin/rails db:test:prepare` + `bin/rails test`; `bin/setup` activates it with
+`git config core.hooksPath .githooks`, since hooks don't come with a clone. Bypass a
+single commit with `git commit --no-verify`. The test step passes trivially today —
+`bin/rails test` still works with the railtie commented out, it just finds 0 tests.
+
+`bin/rails db:test:prepare` shells out to esbuild and tailwindcss. With no `test:prepare`
+task defined (that railtie again), jsbundling-rails and cssbundling-rails fall back to
+enhancing `db:test:prepare` with `javascript:build` and `css:build` — so anything that
+prepares the test database needs npm packages installed, not just gems.
 
 `bin/dev` exports `PORT=3001`, so the app is at <http://localhost:3001>. Plain
 `bin/rails server` falls back to Puma's 3000 — use `bin/dev` unless you mean 3000.
 
-There is no test suite: `rails/test_unit/railtie` is commented out in `config/application.rb`, there is no `test/` directory, and neither `bin/ci` nor the pre-commit hook runs a test step. Don't claim a change is "tested" from a green `bin/ci`. Note also that `bin/ci` shells out to `yarn audit` even though dependencies are managed with npm.
+There is no test suite: `rails/test_unit/railtie` is commented out in `config/application.rb`, there is no `test/` directory, and `bin/ci` runs no test step (the pre-commit hook calls `bin/rails test`, but it has nothing to run). Don't claim a change is "tested" from a green `bin/ci`. Note also that `bin/ci` shells out to `yarn audit` even though dependencies are managed with npm.
 
 Config lives in `.env` (loaded by dotenv in dev/test): `DISCOGS_USERNAME` required, `DISCOGS_TOKEN` optional.
 
