@@ -1,0 +1,10 @@
+selected_ambient:
+  release: selected_ambient
+  rating: 3
+  date_added: <%= 2.days.ago.to_fs(:db) %>
+  notes: Procurar prensagem original
+
+kind_of_blue:
+  release: kind_of_blue
+  rating: 0
+  date_added: <%= 5.days.ago.to_fs(:db) %>

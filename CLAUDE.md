@@ -10,9 +10,12 @@ bin/setup --skip-server
 bin/dev                # Foreman: rails server + esbuild --watch + tailwind --watch
 bin/rails discogs:check # verify DISCOGS_USERNAME/DISCOGS_TOKEN against the API
 bin/rails discogs:sync  # run a full sync synchronously in the terminal
+bin/rails test         # the whole suite
+bin/rails test test/models/release_test.rb        # one file
+bin/rails test test/models/release_test.rb:42     # one test, by line
 bin/rubocop            # rubocop-rails-omakase
 bin/brakeman
-bin/ci                 # setup + rubocop + bundler-audit + yarn audit + brakeman
+bin/ci                 # setup + tests + rubocop + bundler-audit + yarn audit + brakeman
 npm run build          # esbuild once (bundles app/javascript/application.jsx)
 npm run build:css      # tailwind once
 ```
@@ -21,7 +24,8 @@ npm run build:css      # tailwind once
 the frontend build (`npm run build` + `build:css`, which nothing else verifies since
 `app/assets/builds` is gitignored), and `bin/rails db:test:prepare` + `bin/rails test`.
 The test job installs Node as well as Ruby on purpose — see the note on `db:test:prepare`
-below. It deliberately does not repeat the scans in `security.yml`.
+below. It deliberately does not repeat the scans in `security.yml`. `bin/ci` runs the same
+suite locally.
 
 `.github/workflows/security.yml` runs the three vulnerability scans on push to `main`,
 on every PR, and weekly (advisory databases move without the code moving): bundler-audit
@@ -31,18 +35,25 @@ Suppressions live in `config/bundler-audit.yml` and `config/brakeman.ignore`.
 `.githooks/pre-commit` runs `bin/rubocop -f github` over the whole project and then
 `bin/rails db:test:prepare` + `bin/rails test`; `bin/setup` activates it with
 `git config core.hooksPath .githooks`, since hooks don't come with a clone. Bypass a
-single commit with `git commit --no-verify`. The test step passes trivially today —
-`bin/rails test` still works with the railtie commented out, it just finds 0 tests.
+single commit with `git commit --no-verify`.
 
-`bin/rails db:test:prepare` shells out to esbuild and tailwindcss. With no `test:prepare`
-task defined (that railtie again), jsbundling-rails and cssbundling-rails fall back to
-enhancing `db:test:prepare` with `javascript:build` and `css:build` — so anything that
-prepares the test database needs npm packages installed, not just gems.
+`bin/rails db:test:prepare` shells out to esbuild and tailwindcss: jsbundling-rails and
+cssbundling-rails enhance whichever of `test:prepare` / `db:test:prepare` exists with
+`javascript:build` and `css:build`, so anything that prepares the test database needs npm
+packages installed, not just gems.
 
 `bin/dev` exports `PORT=3001`, so the app is at <http://localhost:3001>. Plain
 `bin/rails server` falls back to Puma's 3000 — use `bin/dev` unless you mean 3000.
 
-There is no test suite: `rails/test_unit/railtie` is commented out in `config/application.rb`, there is no `test/` directory, and `bin/ci` runs no test step (the pre-commit hook calls `bin/rails test`, but it has nothing to run). Don't claim a change is "tested" from a green `bin/ci`. Note also that `bin/ci` shells out to `yarn audit` even though dependencies are managed with npm.
+Minitest, fixtures, no extra gems — Minitest 6 dropped `minitest/mock`, so `Object#stub`
+does not exist here; `test/support/stub_helpers.rb` has the one replacement the suite uses.
+`test/test_helper.rb` replaces `Net::HTTP.start` with a raise, so **no test can reach
+api.discogs.com**: anything needing a response installs one with `stub_discogs`
+(`test/support/discogs_stubs.rb`), which matches request URLs against canned replies and
+fails on an unexpected call. dotenv loads the developer's real `.env` in test too, so the
+helper pins `DISCOGS_USERNAME`/`DISCOGS_TOKEN` and `without_env` removes them for the
+"not configured" paths. Note that `bin/ci` shells out to `yarn audit` even though
+dependencies are managed with npm.
 
 Config lives in `.env` (loaded by dotenv in dev/test): `DISCOGS_USERNAME` required, `DISCOGS_TOKEN` optional.
 

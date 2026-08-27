@@ -1,0 +1,9 @@
+completed:
+  status: completed
+  stage: done
+  synced_count: 6
+  total_count: 6
+  started_at: <%= 2.hours.ago.to_fs(:db) %>
+  finished_at: <%= 2.hours.ago.to_fs(:db) %>
+  created_at: <%= 2.hours.ago.to_fs(:db) %>
+  updated_at: <%= 2.hours.ago.to_fs(:db) %>

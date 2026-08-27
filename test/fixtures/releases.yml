@@ -1,0 +1,75 @@
+# Deliberately varied: mixed artist casing for the COLLATE NOCASE sorts, a
+# missing year for the NULLs-last sorts, and overlapping genres/styles so the
+# facet counts have something to add up.
+unknown_pleasures:
+  discogs_id: 1001
+  title: Unknown Pleasures
+  artist: Joy Division
+  artists: [ "Joy Division" ]
+  year: 1979
+  country: UK
+  label: Factory
+  catno: FACT 10
+  thumb_url: https://img.discogs.com/1001-thumb.jpg
+  cover_url: https://img.discogs.com/1001-cover.jpg
+  genres: [ "Rock", "Electronic" ]
+  styles: [ "Post-Punk" ]
+  formats:
+    - { name: Vinyl, qty: "1", descriptions: [ "LP", "Album" ] }
+
+kind_of_blue:
+  discogs_id: 1002
+  title: Kind Of Blue
+  artist: Miles Davis
+  artists: [ "Miles Davis" ]
+  year: 1959
+  country: US
+  label: Columbia
+  catno: CL 1355
+  genres: [ "Jazz" ]
+  styles: [ "Modal" ]
+  formats:
+    - { name: Vinyl, qty: "1", descriptions: [ "LP", "Album", "Reissue" ] }
+
+clube_da_esquina:
+  discogs_id: 1003
+  title: Clube Da Esquina
+  artist: Milton Nascimento
+  artists: [ "Milton Nascimento", "Lô Borges" ]
+  year: 1972
+  country: Brazil
+  label: EMI-Odeon
+  catno: SZLB 001
+  genres: [ "Rock", "Latin" ]
+  styles: [ "MPB" ]
+  formats:
+    - { name: Vinyl, qty: "2", descriptions: [ "LP", "Album" ], text: Gatefold }
+
+selected_ambient:
+  discogs_id: 1004
+  title: Selected Ambient Works 85-92
+  artist: Aphex Twin
+  artists: [ "Aphex Twin" ]
+  year: 1992
+  country: UK
+  label: Apollo
+  catno: AMB 3922
+  genres: [ "Electronic" ]
+  styles: [ "Ambient", "IDM" ]
+  formats:
+    - { name: CD, qty: "1", descriptions: [ "Album" ] }
+
+# Lowercase artist and no year: the sorting edge cases.
+undated_demo:
+  discogs_id: 1005
+  title: demos caseiras
+  artist: aardvark coletivo
+  artists: [ "aardvark coletivo" ]
+  year:
+  country: Brazil
+  label: Independente
+  catno: IND 001
+  genres: [ "Rock" ]
+  styles: [ "Lo-Fi" ]
+  formats:
+    - { name: Cassette, qty: "1", descriptions: [ "Album" ] }

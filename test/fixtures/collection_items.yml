@@ -1,0 +1,31 @@
+unknown_pleasures:
+  release: unknown_pleasures
+  instance_id: 5001
+  folder_id: 1
+  rating: 5
+  date_added: <%= 3.days.ago.to_fs(:db) %>
+  notes: []
+
+kind_of_blue:
+  release: kind_of_blue
+  instance_id: 5002
+  folder_id: 1
+  rating: 4
+  date_added: <%= 10.days.ago.to_fs(:db) %>
+  notes: [ { field_id: 1, value: "Capa desgastada" } ]
+
+clube_da_esquina:
+  release: clube_da_esquina
+  instance_id: 5003
+  folder_id: 1
+  rating: 0
+  date_added: <%= 1.day.ago.to_fs(:db) %>
+  notes: []
+
+undated_demo:
+  release: undated_demo
+  instance_id: 5004
+  folder_id: 1
+  rating: 2
+  date_added: <%= 20.days.ago.to_fs(:db) %>
+  notes: []
