@@ -18,9 +18,11 @@ export default function Layout() {
       <header className="sticky top-0 z-20 -mx-4 mb-6 border-b border-ink-800/80 bg-ink-950/85 px-4 py-3 backdrop-blur-md sm:-mx-6 sm:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link to="/" className="group flex items-center gap-2.5">
-            <span className="flex size-9 items-center justify-center rounded-full bg-wax-500/15 text-wax-400 transition group-hover:bg-wax-500/25">
-              <DiscIcon size={20} />
-            </span>
+            <img
+              src="/images/dekslayer.png"
+              alt="DeksLayer"
+              className="h-12 w-auto max-w-[12rem] object-contain transition-opacity group-hover:opacity-80"
+            />
             <span className="leading-tight">
               <span className="block text-sm font-semibold tracking-tight text-ink-50">Discogs Shelf</span>
               <span className="block text-[11px] text-ink-500">
