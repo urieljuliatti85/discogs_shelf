@@ -11,20 +11,35 @@ module Api
     end
 
     def create
-      if SyncRun.running?
-        return render json: serialize(SyncRun.current), status: :accepted
-      end
-
       client = Discogs::Client.new
       raise Discogs::NotConfigured, "DISCOGS_USERNAME não está configurado" unless client.configured?
 
-      sync_run = SyncRun.create!(status: "pending")
-      DiscogsSyncJob.perform_later(sync_run.id)
+      sync_run, already_running = start_run
 
-      render json: serialize(sync_run), status: :created
+      if already_running
+        render json: serialize(sync_run), status: :accepted
+      else
+        DiscogsSyncJob.perform_later(sync_run.id)
+        render json: serialize(sync_run), status: :created
+      end
     end
 
     private
+
+    # SyncRun.running? (a SELECT) and SyncRun.create! used to run as two
+    # separate statements, so two near-simultaneous requests could both see
+    # "not running" before either had inserted its row. A plain
+    # ActiveRecord transaction opens with SQLite's BEGIN IMMEDIATE (see
+    # ActiveRecord::ConnectionAdapters::SQLite3::DatabaseStatements#begin_db_transaction),
+    # which grabs the write lock up front, so the second request's transaction
+    # blocks here until the first one commits and its row is visible.
+    def start_run
+      SyncRun.transaction do
+        break [ SyncRun.current, true ] if SyncRun.running?
+
+        [ SyncRun.create!(status: "pending"), false ]
+      end
+    end
 
     def serialize(sync_run)
       return { status: "never_run" } if sync_run.nil?

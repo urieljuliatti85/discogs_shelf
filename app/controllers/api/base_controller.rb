@@ -1,9 +1,10 @@
 module Api
   class BaseController < ApplicationController
-    # Dedicated to rate limiting rather than `cache_store`: the app's default
-    # store is `:null_store` in test and swaps per environment otherwise, which
-    # would make rate limits silently inert in test and awkward to exercise.
-    RATE_LIMIT_STORE = ActiveSupport::Cache::MemoryStore.new
+    # Rails.cache in production is solid_cache (shared across Puma workers via
+    # the DB), which is what a rate limit needs to mean anything once there is
+    # more than one process. Test's cache_store is :null_store, which would
+    # make rate limits silently inert there, so test gets its own MemoryStore.
+    RATE_LIMIT_STORE = Rails.env.test? ? ActiveSupport::Cache::MemoryStore.new : Rails.cache
 
     skip_forgery_protection if: -> { request.get? }
 

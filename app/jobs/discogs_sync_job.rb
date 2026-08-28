@@ -3,7 +3,7 @@ class DiscogsSyncJob < ApplicationJob
 
   def perform(sync_run_id)
     sync_run = SyncRun.find(sync_run_id)
-    return unless sync_run.running? || sync_run.status == "pending"
+    return unless sync_run.running?
 
     Discogs::Sync.new(sync_run: sync_run).call
   rescue Discogs::Error
