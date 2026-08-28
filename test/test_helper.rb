@@ -29,6 +29,11 @@ module ActiveSupport
 
     fixtures :all
 
+    # RATE_LIMIT_STORE is a single MemoryStore shared by the whole process
+    # (see Api::BaseController), so leftover counts from one test would bleed
+    # into the next one otherwise.
+    setup { Api::BaseController::RATE_LIMIT_STORE.clear }
+
     # The client reads ENV at construction, so the "not configured" paths need
     # the variable actually gone for the duration of the block.
     def without_env(*keys)

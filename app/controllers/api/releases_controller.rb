@@ -1,5 +1,9 @@
 module Api
   class ReleasesController < BaseController
+    # Each miss on the 30-day details cache costs a Discogs request, so cap how
+    # fast a caller can walk distinct release ids and force fresh fetches.
+    rate_limit to: 60, within: 1.minute, only: [ :show, :marketplace ], store: RATE_LIMIT_STORE, with: :render_rate_limited
+
     # Full release detail. Tracklists, videos and credits are not part of the
     # collection payload, so they are fetched on demand and cached in SQLite.
     def show

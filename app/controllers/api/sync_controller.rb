@@ -1,5 +1,11 @@
 module Api
   class SyncController < BaseController
+    # A full sync crawls the whole Discogs collection/wantlist. SyncRun.running?
+    # already blocks a second run while one is in flight, but not repeated
+    # attempts once one finishes or fails, so this caps how often the endpoint
+    # can kick off the external crawl at all.
+    rate_limit to: 5, within: 10.minutes, only: :create, store: RATE_LIMIT_STORE, with: :render_rate_limited
+
     def show
       render json: serialize(SyncRun.current)
     end

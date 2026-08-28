@@ -1,5 +1,10 @@
 module Api
   class BaseController < ApplicationController
+    # Dedicated to rate limiting rather than `cache_store`: the app's default
+    # store is `:null_store` in test and swaps per environment otherwise, which
+    # would make rate limits silently inert in test and awkward to exercise.
+    RATE_LIMIT_STORE = ActiveSupport::Cache::MemoryStore.new
+
     skip_forgery_protection if: -> { request.get? }
 
     # rescue_from matches handlers in reverse declaration order, so the
@@ -10,6 +15,11 @@ module Api
     rescue_from ActiveRecord::RecordNotFound, with: :render_not_found
 
     private
+
+    def render_rate_limited
+      render json: { error: "rate_limited", message: "Muitas requisições. Aguarde um pouco e tente de novo." },
+             status: :too_many_requests
+    end
 
     def render_not_configured(error)
       render json: { error: "not_configured", message: error.message }, status: :service_unavailable

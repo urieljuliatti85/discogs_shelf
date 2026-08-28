@@ -140,4 +140,17 @@ class Api::ReleasesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
     assert_equal "not_found", json["error"]
   end
+
+  test "rate limits repeated detail requests from the same IP" do
+    release = releases(:unknown_pleasures)
+    release.update!(details: detail_payload, details_fetched_at: 1.hour.ago)
+
+    60.times { get api_release_url(release.discogs_id) }
+    assert_response :success
+
+    get api_release_url(release.discogs_id)
+
+    assert_response :too_many_requests
+    assert_equal "rate_limited", json["error"]
+  end
 end

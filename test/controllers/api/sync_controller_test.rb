@@ -80,4 +80,17 @@ class Api::SyncControllerTest < ActionDispatch::IntegrationTest
     assert_equal "not_configured", json["error"]
     assert_match "DISCOGS_USERNAME", json["message"]
   end
+
+  test "rate limits repeated attempts to start a sync" do
+    5.times do
+      SyncRun.delete_all
+      post api_sync_url
+    end
+    assert_response :created
+
+    post api_sync_url
+
+    assert_response :too_many_requests
+    assert_equal "rate_limited", json["error"]
+  end
 end
