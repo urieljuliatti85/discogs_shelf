@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: "bundler"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      rails:
+        patterns: [ "rails", "rails-*", "*-rails" ]
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  # Keeps third-party Actions (checkout, setup-ruby, setup-node, upload-artifact)
+  # current — an unpinned major tag can otherwise point at a compromised commit
+  # without the workflow file itself ever changing.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

@@ -45,6 +45,9 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  # Line coverage for bin/rails test, reported in CI as a job summary [https://github.com/simplecov-ruby/simplecov]
+  gem "simplecov", "~> 1.1", require: false
 end
 
 group :development do

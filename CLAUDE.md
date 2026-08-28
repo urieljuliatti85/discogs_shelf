@@ -15,7 +15,7 @@ bin/rails test test/models/release_test.rb        # one file
 bin/rails test test/models/release_test.rb:42     # one test, by line
 bin/rubocop            # rubocop-rails-omakase
 bin/brakeman
-bin/ci                 # setup + tests + rubocop + bundler-audit + yarn audit + brakeman
+bin/ci                 # setup + tests + rubocop + bundler-audit + npm audit + brakeman
 npm run build          # esbuild once (bundles app/javascript/application.jsx)
 npm run build:css      # tailwind once
 ```
@@ -29,8 +29,13 @@ suite locally.
 
 `.github/workflows/security.yml` runs the three vulnerability scans on push to `main`,
 on every PR, and weekly (advisory databases move without the code moving): bundler-audit
-against a freshly pulled ruby-advisory-db, brakeman, and `npm audit --audit-level=high`.
-Suppressions live in `config/bundler-audit.yml` and `config/brakeman.ignore`.
+against a freshly pulled ruby-advisory-db, brakeman (JSON report uploaded as a build
+artifact regardless of outcome), and `npm audit --audit-level=high`. Suppressions live in
+`config/bundler-audit.yml` and `config/brakeman.ignore`. `.github/workflows/codeql.yml`
+runs CodeQL over `app/javascript` on the same cadence — Brakeman only covers the Ruby
+side. `.github/dependabot.yml` keeps gems, npm packages, and the Actions themselves
+patched weekly. Every job across all three workflows carries a `timeout-minutes` so a
+hung step fails loudly instead of burning Actions minutes silently.
 
 `.githooks/pre-commit` runs `bin/rubocop -f github` over the whole project and then
 `bin/rails db:test:prepare` + `bin/rails test`; `bin/setup` activates it with
@@ -52,8 +57,10 @@ api.discogs.com**: anything needing a response installs one with `stub_discogs`
 (`test/support/discogs_stubs.rb`), which matches request URLs against canned replies and
 fails on an unexpected call. dotenv loads the developer's real `.env` in test too, so the
 helper pins `DISCOGS_USERNAME`/`DISCOGS_TOKEN` and `without_env` removes them for the
-"not configured" paths. Note that `bin/ci` shells out to `yarn audit` even though
-dependencies are managed with npm.
+"not configured" paths. Line coverage (SimpleCov) only instruments when `COVERAGE=true`
+is set — CI's test job sets it and publishes the percentage to the job summary plus an
+`coverage-report` artifact; a plain local `bin/rails test` skips the instrumentation
+overhead.
 
 Config lives in `.env` (loaded by dotenv in dev/test): `DISCOGS_USERNAME` required, `DISCOGS_TOKEN` optional.
 

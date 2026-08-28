@@ -13,10 +13,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   gem-advisories:
     name: Gem advisories (bundler-audit)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -35,6 +40,7 @@ jobs:
   rails-static-analysis:
     name: Static analysis (brakeman)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -43,13 +49,24 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      # Reviewed warnings are recorded in config/brakeman.ignore.
+      # Reviewed warnings are recorded in config/brakeman.ignore. The JSON report
+      # is written regardless of exit status so a failed run stays inspectable
+      # from the artifact instead of requiring a local re-run.
       - name: Scan for Rails security vulnerabilities
-        run: bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error
+        run: bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error --output brakeman-report.json --format json
+
+      - name: Upload Brakeman report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: brakeman-report
+          path: brakeman-report.json
+          retention-days: 14
 
   npm-advisories:
     name: npm advisories
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -58,7 +75,6 @@ jobs:
           node-version-file: .node-version
 
       # npm audit resolves the tree straight from package-lock.json, so there
-      # is no install step. Note bin/ci runs `yarn audit` for this instead,
-      # even though dependencies are npm-managed.
+      # is no install step.
       - name: Audit npm dependencies
         run: npm audit --audit-level=high
