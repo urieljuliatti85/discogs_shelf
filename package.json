@@ -7,7 +7,7 @@
     "build:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify"
   },
   "dependencies": {
-    "react": "^19.2.0",
+    "react": "^19.3.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.9.1"
   },
